@@ -166,6 +166,7 @@ def get_embedding_module(
     training_max_percentage: float,
     interaction_model: bool,
     model_path: str,
+    des_dict_path: str,
 ):
     # embedding_module = PrecomputedEmbeddingModule(
     #     alignments_path=os.path.join(embed_output_path, "alignment_results_12"),
@@ -182,7 +183,7 @@ def get_embedding_module(
             gold_result.add((ent_l, ent_r))
 
     embedding_module = BertIntModule(
-        des_dict_path="model/bert_int/data/dbp15k/2016-10-des_dict",
+        des_dict_path=des_dict_path,
         # description_name_1="http://purl.org/dc/elements/1.1/description",
         # description_name_2="http://schema.org/description",
         model_path=model_path,
@@ -242,6 +243,7 @@ def main():
         args.training_max_percentage,
         args.interaction_model,
         args.model_path,
+        args.des_dict_path,
     )
     embed_module_name = module.__class__.__name__
 
@@ -316,6 +318,13 @@ def parse_args():
         type=str,
         default=None,
         help="Path to the model file.",
+    )
+    
+    parser.add_argument(
+        "--des_dict_path",
+        type=str,
+        default=None,
+        help="Path to the description dictionary file.",
     )
 
     return parser.parse_args()
