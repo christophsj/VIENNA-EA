@@ -40,11 +40,3 @@ class Entity:
             self.involved_as_tail_dict[relation] = set()
         self.involved_as_tail_dict[relation].add(head)
 
-    def __hash__(self):
-        return hash(self.id)
-
-    def __eq__(self, other):
-        if not isinstance(other, Entity):
-            return NotImplemented
-        return self.name == other.name and self.id == other.id and self.value == other.value
-

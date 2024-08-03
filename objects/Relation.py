@@ -47,11 +47,3 @@ class Relation:
             return
         self.functionality = len(self.head_ent_set) / self.frequency
         self.functionality_inv = len(self.tail_ent_set) / self.frequency
-
-    def __hash__(self):
-        return hash(self.id)
-
-    def __eq__(self, other):
-        if not isinstance(other, Relation):
-            return NotImplemented
-        return self.name == other.name and self.id == other.id and self.value == other.value
