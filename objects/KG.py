@@ -286,3 +286,15 @@ class KG:
         functionality_printer(True, True, func_num)
         functionality_printer(False, False, func_num)
         functionality_printer(False, True, func_num)
+        
+    
+        
+    @staticmethod
+    def get_affiliation(kg_l, kg_r, name):
+        if name in kg_l.entity_dict_by_name:
+            return kg_l
+
+        if name in kg_r.entity_dict_by_name:
+            return kg_r
+
+        raise Exception(f"{name} not found in either KG!")
