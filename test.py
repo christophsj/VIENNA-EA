@@ -4,9 +4,9 @@ import logging
 import argparse
 import numpy as np
 
+from module.cluster_ea_module import ClusterEAModule
 from module.dummy_module import DummyModule
 from module.module import AlignmentState, Module
-from module.bert_int_module import BertIntModule
 from module.precomputed_embedding_module import PrecomputedEmbeddingModule
 from objects.KG import KG
 from objects.KGs import KGs
@@ -182,14 +182,12 @@ def get_embedding_module(
             ent_l, ent_r = params[0].strip(), params[1].strip()
             gold_result.add((ent_l, ent_r))
 
-    embedding_module = BertIntModule(
-        des_dict_path=des_dict_path,
+    embedding_module = ClusterEAModule(
         # description_name_1="http://purl.org/dc/elements/1.1/description",
         # description_name_2="http://schema.org/description",
         model_path=model_path,
-        interaction_model=interaction_model,
         training_max_percentage=training_max_percentage,
-        debug_file_output_dir=save_dir_path + os.path.join("/bert_int", dataset_name),
+        debug_file_output_dir=save_dir_path + os.path.join("/clusterea", dataset_name),
         dataset_name=dataset_name,
         gold_result=gold_result,
     )

@@ -38,16 +38,16 @@ class Module:
     # utility functions
 
     @staticmethod
-    def _ent_emb_to_dict(kg1, kg2, bert_int_data, ent_emb):
+    def _ent_emb_to_dict(kg1, kg2, index2entity, ent_emb):
         logger.info(f"Length of entity embedding: {len(ent_emb)}")
 
         return {
-            KG.get_affiliation(kg1, kg2, bert_int_data.index2entity[idx]): {
-                bert_int_data.index2entity[idx]: emb
+            KG.get_affiliation(kg1, kg2, index2entity[idx]): {
+                index2entity[idx]: emb
             }
             for idx, emb in enumerate(ent_emb)
-            if idx in bert_int_data.index2entity
-            and bert_int_data.index2entity[idx] != "<PAD>"
+            if idx in index2entity
+            and index2entity[idx] != "<PAD>"
         }
 
     @staticmethod
