@@ -217,7 +217,7 @@ def load_dataset(scale='small', ds='ids', lang='fr', train_ratio=0.3, shuffle=Fa
 
 class InMemoryEAData(EAData):
     
-    def __init__(self, triples1, triples2, ent_links, train_count = None, train_ratio=None, **kwargs):
+    def __init__(self, triples1, triples2, ent_links, train_count = None, semi_links = None, train_ratio=None, **kwargs):
         self.rel1, self.ent1, self.triple1 = EAData.process_one_graph_from_triples(triples1)
         self.rel2, self.ent2, self.triple2 = EAData.process_one_graph_from_triples(triples2)
         
@@ -229,8 +229,8 @@ class InMemoryEAData(EAData):
         self.ents = [self.ent1, self.ent2]
         self.triples = [self.triple1, self.triple2]
         
-        self.unsup = False
-        # self.semi_link = EAData.process_link_from_tuples(ent_links, self.ent1, self.ent2)
+        self.unsup = semi_links is not None
+        self.semi_link = EAData.process_link_from_tuples(semi_links, self.ent1, self.ent2) if self.unsup else None
         
         if train_count is not None:
             self.train_cnt = train_count

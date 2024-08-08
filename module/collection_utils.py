@@ -9,6 +9,10 @@ class ListUtils:
         print_size = min(size, len(my_list))
         return my_list[:print_size]
     
+    @staticmethod
+    def flatten(xss):
+        return [x for xs in xss for x in xs]
+    
 class DictUtils:
     
     @staticmethod

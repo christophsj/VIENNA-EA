@@ -144,7 +144,7 @@ class BertIntModule(Module):
             )
 
         logger.info(f"New entity pairs: {len(entity_pairs)}")
-        new_pairs = EntityPairUtils.merge_entity_pairs(state.entity_alignments, entity_pairs)
+        new_pairs = EntityPairUtils.merge_entity_pairs(state.entity_alignments, entity_pairs, self.result_align_threshold)
         logger.info(f"Merged entity pairs: {len(new_pairs)}")
         return AlignmentState(
             entity_embeddings=ent_emb_dict, entity_alignments=new_pairs
