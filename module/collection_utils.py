@@ -12,6 +12,10 @@ class ListUtils:
 class DictUtils:
     
     @staticmethod
+    def reverse_dict(d):
+        return {v: k for k, v in d.items()}
+    
+    @staticmethod
     def dict_head(dictionary: dict, size=5) -> dict:
         print_size = min(size, len(dictionary))
         return {k: dictionary[k] for k in list(dictionary.keys())[:print_size]}
@@ -24,9 +28,14 @@ class DictUtils:
 class EntityPairUtils:
     
     @staticmethod
-    def object_relation_tuples_to_primitive(ent2index: dict, rel2index: dict,
+    def object_relation_tuples_to_index(ent2index: dict, rel2index: dict,
                                               relation_tuple_list: list[tuple[Entity, Relation, Entity]]):
         return [(ent2index[head.name], rel2index[relation.name], ent2index[tail.name])
+                for head, relation, tail in relation_tuple_list]
+    
+    @staticmethod
+    def object_triples_to_name_triples(relation_tuple_list: list[tuple[Entity, Relation, Entity]]):
+        return [(head.name, relation.name, tail.name)
                 for head, relation, tail in relation_tuple_list]
     
         

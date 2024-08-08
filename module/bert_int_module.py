@@ -260,7 +260,7 @@ class BertIntModule(Module):
                 bert_int_data.ent2data,
             )
         )
-        ent_emb_dict = self._ent_emb_to_dict(kg1, kg2, bert_int_data, ent_emb)
+        ent_emb_dict = self._ent_emb_to_dict(kg1, kg2, bert_int_data.index2entity, ent_emb)
         return (
             bert_int_data,
             trained_module,
@@ -306,10 +306,10 @@ class BertIntModule(Module):
         # rel_triples_1 = read_idtuple_file(data_path + 'triples_1')
         # rel_triples_2 = read_idtuple_file(data_path + 'triples_2')
 
-        rel_triples_1 = EntityPairUtils.object_relation_tuples_to_primitive(
+        rel_triples_1 = EntityPairUtils.object_relation_tuples_to_index(
             entity2index, rel2index, kg_l.relation_tuple_list
         )
-        rel_triples_2 = EntityPairUtils.object_relation_tuples_to_primitive(
+        rel_triples_2 = EntityPairUtils.object_relation_tuples_to_index(
             entity2index, rel2index, kg_r.relation_tuple_list
         )
 
