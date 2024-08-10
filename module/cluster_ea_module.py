@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import Iterable
 
 import torch
 from tqdm import trange
@@ -35,9 +36,6 @@ class ClusterEAModule(Module):
         self.dataset_name = dataset_name
         self.gold_result = gold_result
 
-        if debug_file_output_dir is not None:
-            os.makedirs(debug_file_output_dir, exist_ok=True)
-
         logger.info("BertIntModule parameters:")
         logger.info(f"dataset_name: {dataset_name}")
         logger.info(f"training_threshold: {training_threshold}")
@@ -46,41 +44,38 @@ class ClusterEAModule(Module):
         logger.info(f"result_align_threshold: {result_align_threshold}")
         logger.info(f"debug_file_output: {debug_file_output_dir}")
 
+        if debug_file_output_dir is not None:
+            os.makedirs(debug_file_output_dir, exist_ok=True)
+
     def step(self, kg1: KG, kg2: KG, state: AlignmentState) -> AlignmentState:
-        ent_emb_dict, entity_pairs = self.run(kg1, kg2, state)
-
-        logger.info(f"New entity pairs: {len(entity_pairs)}")
-        new_pairs = EntityPairUtils.merge_entity_pairs(
-            state.entity_alignments, entity_pairs
-        )
-        logger.info(f"Merged entity pairs: {len(new_pairs)}")
-        return AlignmentState(
-            entity_embeddings=ent_emb_dict, entity_alignments=new_pairs
-        )
-
-    def run(self, kg1: KG, kg2: KG, state: AlignmentState):
         dataset : InMemoryEAData = self.__convert_data(kg1, kg2, state)
         sim_matrix, embeddings = run_1_to_3(dataset)
-        len1 = len(dataset.ent1)
-        print(len1)
-        print(len(embeddings))
+        kg1_entities_length = len(dataset.ent1)
+        logger.info(f"Length of kg1 entities {kg1_entities_length}")
+        logger.info(f"Length of embeddings {len(embeddings)}")
         
         for emb in embeddings:
-            print(len(emb))
-            
-        
+            logger.info(f"Length of embedding: {len(emb)}")
             
         ent_emb_dict = self._ent_emb_to_dict(
             kg1,
             kg2,
             {
                 **DictUtils.reverse_dict(dataset.ent1),
-                **{(k + len1) : v for k,v in DictUtils.reverse_dict(dataset.ent2).items()},
+                **{(entity_index + kg1_entities_length) : entity_name for entity_index,entity_name in DictUtils.reverse_dict(dataset.ent2).items()},
             },
             ListUtils.flatten(embeddings),
         )
+        
         new_entity_pairs = self.__sim_matrix_to_entity_pairs(sim_matrix, dataset)
-        logger.info(f"New entity pairs: {len(new_entity_pairs)}")
+        
+        if self.gold_result is not None:
+            self._show_stats(new_entity_pairs, self.gold_result)
+        
+        if self.debug_file_output_dir is not None:
+            with open(os.path.join(self.debug_file_output_dir, "new_entity_pairs.csv"), "w") as f:
+                for e1, e2, prob in new_entity_pairs:
+                    f.write(f"{e1},{e2},{prob}\n")
         
         pairs = EntityPairUtils.merge_entity_pairs(state.entity_alignments, new_entity_pairs, self.result_align_threshold)
         
@@ -89,7 +84,7 @@ class ClusterEAModule(Module):
             entity_alignments=pairs
         )
 
-    def __sim_matrix_to_entity_pairs(self, sim_matrix, dataset: InMemoryEAData):
+    def __sim_matrix_to_entity_pairs(self, sim_matrix, dataset: InMemoryEAData) -> Iterable[tuple[str, str, float]]:
         indices, scores = self.__alignments_from_sim_matrix(sim_matrix)
         for idx, score in zip(indices, scores):
             if score < self.result_align_threshold:
@@ -104,7 +99,7 @@ class ClusterEAModule(Module):
         max_count = min(max_count, len(semi_links))
         
         semi_links = semi_links[:int(max_count)]
-        self._show_training_stats(semi_links, self.gold_result)
+        self._show_stats(semi_links, self.gold_result)
         
         return InMemoryEAData(
             EntityPairUtils.object_triples_to_name_triples(kg1.relation_tuple_list),
@@ -126,15 +121,27 @@ class ClusterEAModule(Module):
         for i_batch in trange(0, all_len, batch_size):
             i_end = min(all_len, i_batch + batch_size)
             curr_top1_scores, curr_top1_indices = resize_sparse(filter_which(sp_sim, ind_0=([torch.ge, torch.lt], [i_batch, i_end])),
-                                    [i_end - i_batch, trg_len], [-i_batch, 0]).to_dense().topk(1)
+                                    [i_end - i_batch, trg_len], [-i_batch, 0]).to_dense().max(dim=1)
             top1_indices.append(curr_top1_indices)
             top1_scores.append(curr_top1_scores)
+            
+            # logger.info(f"Top1 indices: {curr_top1_indices}")
+            # logger.info(f"Top1 scores: {curr_top1_scores}")
+            # logger.info(f"Top1 indices shape: {curr_top1_indices.shape}")
+            # logger.info(f"Top1 scores shape: {curr_top1_scores.shape}")
+            
+            if curr_top1_indices.shape != curr_top1_scores.shape:
+                raise ValueError("Top1 indices and scores shape mismatch")
             
         top1_indices = torch.cat(top1_indices)
         top1_scores = torch.cat(top1_scores)
         
+        
         top1_indices_array = top1_indices.detach().cpu().numpy()
         top1_scores_array = top1_scores.detach().cpu().numpy()
+        
+        logger.info(f"Top1 indices array: {len(top1_indices_array)}")
+        logger.info(f"Top1 scores array: {len(top1_scores_array)}")
         
         if self.debug_file_output_dir is not None:
             with open(os.path.join(self.debug_file_output_dir, "top1_indices.npy"), "wb") as f:

@@ -352,7 +352,7 @@ class BertIntModule(Module):
                     f.write(f"{index2entity[e1]}\t{index2entity[e2]}\n")
 
         if self.gold_result is not None:
-            self._show_training_stats(
+            self._show_stats(
                 set(map(lambda x: (index2entity[x[0]], index2entity[x[1]]), train_ill)),
                 set(self.gold_result),
             )

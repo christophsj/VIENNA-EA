@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from dataclasses import dataclass, field
 import logging
 from typing import TypeAlias
@@ -9,10 +10,10 @@ entity_id: TypeAlias = str
 relation_id: TypeAlias = str
 confidence: TypeAlias = float
 entity_alignment: TypeAlias = list[
-    tuple[entity_id | None, entity_id | None, confidence]
+    tuple[entity_id, entity_id, confidence]
 ]
 relation_alignment: TypeAlias = list[
-    tuple[relation_id | None, relation_id | None, confidence]
+    tuple[relation_id, relation_id, confidence]
 ]
 entity_embedding: TypeAlias = dict[KG, dict[entity_id, np.ndarray]]
 relation_embedding: TypeAlias = dict[KG, dict[relation_id, np.ndarray]]
@@ -31,6 +32,7 @@ class AlignmentState:
 
 class Module:
 
+    @abstractmethod
     def step(self, kg_l: KG, kg_r: KG, state: AlignmentState) -> AlignmentState:
         """Run the module."""
         pass
@@ -51,17 +53,17 @@ class Module:
         }
 
     @staticmethod
-    def _show_training_stats(train_set, gold_standard_set):
+    def _show_stats(compare_set, gold_standard_set):
         def set_to_dict(s):
             return {x[0]: x[1] for x in s}
 
-        train_dict = set_to_dict(train_set)
+        compare_dict = set_to_dict(compare_set)
         gold_dict = set_to_dict(gold_standard_set)
 
         correct_num = 0
         wrong_num = 0
         unknown = 0
-        for k, v in train_dict.items():
+        for k, v in compare_dict.items():
             if k in gold_dict:
                 if v == gold_dict[k]:
                     correct_num += 1
@@ -73,5 +75,5 @@ class Module:
         total = correct_num + wrong_num
         precision = correct_num / total
         logger.info(
-            f"Training data stats: Correct: {correct_num}, Wrong: {wrong_num}, Total: {total}, Precision: {precision}, Unknown: {unknown}"
+            f"Data stats: Correct: {correct_num}, Wrong: {wrong_num}, Total: {total}, Precision: {precision}, Unknown: {unknown}"
         )

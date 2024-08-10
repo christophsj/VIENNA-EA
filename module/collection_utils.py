@@ -1,3 +1,4 @@
+from typing import Iterable, Optional
 from objects.Entity import Entity
 from objects.Relation import Relation
 
@@ -44,7 +45,7 @@ class EntityPairUtils:
     
         
     @staticmethod
-    def take_max_candidate(scores: list[str, float, int]) -> tuple[int, float]:
+    def take_max_candidate(scores: list[tuple[str, float, int]]) -> tuple[Optional[str], float]:
         max_score = float("-inf")
         result_entity = None
         for e2, score, _ in scores:
@@ -54,8 +55,8 @@ class EntityPairUtils:
         return result_entity, max_score
     
     @staticmethod
-    def merge_entity_pairs(entity_pairs: list[tuple[str, str, float]],
-                                            new_entity_pairs: list[tuple[str, str, float]], result_align_threshold: float) -> list[tuple[str, str, float]]:
+    def merge_entity_pairs(entity_pairs: Iterable[tuple[str, str, float]],
+                                            new_entity_pairs: Iterable[tuple[str, str, float]], result_align_threshold: float) -> list[tuple[str, str, float]]:
         entity_pairs_dict = EntityPairUtils._entity_pairs_to_dict(entity_pairs)
         new_entity_pairs_dict = EntityPairUtils._entity_pairs_to_dict(new_entity_pairs)
         entity_pairs_merged_dict = {}
@@ -95,7 +96,7 @@ class EntityPairUtils:
         return result
 
     @staticmethod
-    def _entity_pairs_to_dict(entity_pairs):
+    def _entity_pairs_to_dict(entity_pairs: Iterable[tuple[str, str, float]]) -> dict[str, tuple[str, float]]:
         result = {}
         for e1, e2, prob in entity_pairs:
             result[e1] = e2, prob
