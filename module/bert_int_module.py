@@ -1,6 +1,7 @@
 import logging
 import os
 import re
+from typing import Optional
 
 import torch
 from transformers import BertTokenizer
@@ -47,7 +48,7 @@ class BertIntModule(Module):
 
     def __init__(
         self,
-        dataset_name,
+        dataset_name: str,
         des_dict_path: str | None = None,
         description_name_1: str = None,
         description_name_2: str = None,
@@ -87,7 +88,7 @@ class BertIntModule(Module):
         logger.info(f"debug_file_output: {debug_file_output_dir}")
 
     @staticmethod
-    def __load_model_from_path(bert_model_path: str):
+    def __load_model_from_path(bert_model_path: str) -> Basic_Bert_Unit_model:
         Model = Basic_Bert_Unit_model(768, BASIC_BERT_UNIT_MODEL_OUTPUT_DIM)
         Model.load_state_dict(torch.load(bert_model_path, map_location="cpu"))
         logger.info("loading basic bert unit model from:  {}".format(bert_model_path))
@@ -97,7 +98,7 @@ class BertIntModule(Module):
         Model = Model.cuda(CUDA_NUM)
         return Model
 
-    def __convert_basic_unit_to_final(self, bert_int_data, entity_pairs):
+    def __convert_basic_unit_to_final(self, bert_int_data: BertIntInput, entity_pairs: list[tuple[str, str, float]]) -> list[tuple[str, str, float]]:
         entity_pairs_dict = EntityPairUtils.entity_pairs_to_candidate_dict(entity_pairs)
 
         if self.debug_file_output_dir is not None:
@@ -455,7 +456,7 @@ class BertIntModule(Module):
             rel_triples_2=rel_triples_2,
         )
 
-    def _build_desc_dict_from_attribute_or_name(self, kg, description_name):
+    def _build_desc_dict_from_attribute_or_name(self, kg: KG, description_name: Optional[str]):
         if description_name is None:
             return {ent.name: get_name(ent.name) for ent in kg.entity_set}
         descriptions_l = [
@@ -475,7 +476,7 @@ class BertIntModule(Module):
         return descriptions_dict
 
     @staticmethod
-    def _get_name(name):
+    def _get_name(name: str) -> str:
         processed_name = get_name(name)
         # if name matches Q\d+ then it is a wikidata entity
         if re.match(r"Q\d+", processed_name):

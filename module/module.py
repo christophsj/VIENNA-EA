@@ -9,12 +9,8 @@ from objects.KG import KG
 entity_id: TypeAlias = str
 relation_id: TypeAlias = str
 confidence: TypeAlias = float
-entity_alignment: TypeAlias = list[
-    tuple[entity_id, entity_id, confidence]
-]
-relation_alignment: TypeAlias = list[
-    tuple[relation_id, relation_id, confidence]
-]
+entity_alignment: TypeAlias = list[tuple[entity_id, entity_id, confidence]]
+relation_alignment: TypeAlias = list[tuple[relation_id, relation_id, confidence]]
 entity_embedding: TypeAlias = dict[KG, dict[entity_id, np.ndarray]]
 relation_embedding: TypeAlias = dict[KG, dict[relation_id, np.ndarray]]
 
@@ -40,21 +36,20 @@ class Module:
     # utility functions
 
     @staticmethod
-    def _ent_emb_to_dict(kg1, kg2, index2entity, ent_emb):
+    def _ent_emb_to_dict(kg1: KG, kg2: KG, index2entity: dict[int, str], ent_emb: list) -> dict[KG, dict[str, list]]:
         logger.info(f"Length of entity embedding: {len(ent_emb)}")
 
         return {
-            KG.get_affiliation(kg1, kg2, index2entity[idx]): {
-                index2entity[idx]: emb
-            }
+            KG.get_affiliation(kg1, kg2, index2entity[idx]): {index2entity[idx]: emb}
             for idx, emb in enumerate(ent_emb)
-            if idx in index2entity
-            and index2entity[idx] != "<PAD>"
+            if idx in index2entity and index2entity[idx] != "<PAD>"
         }
 
     @staticmethod
-    def _show_stats(compare_set, gold_standard_set):
-        def set_to_dict(s):
+    def _show_stats(
+        compare_set: list[tuple[str, str]], gold_standard_set: list[tuple[str, str]]
+    ) -> None:
+        def set_to_dict(s: list[tuple[str, str]]):
             return {x[0]: x[1] for x in s}
 
         compare_dict = set_to_dict(compare_set)

@@ -28,9 +28,12 @@ class KGs:
         self.workers = workers
         self.fusion_func = fusion_func
 
-        self.rel_ongoing_dict_l, self.rel_ongoing_dict_r = dict(), dict()
-        self.rel_norm_dict_l, self.rel_norm_dict_r = dict(), dict()
-        self.rel_align_dict_l, self.rel_align_dict_r = dict(), dict()
+        self.rel_ongoing_dict_l: dict = dict()
+        self.rel_ongoing_dict_r: dict = dict()
+        self.rel_norm_dict_l: dict = dict()
+        self.rel_norm_dict_r: dict = dict()
+        self.rel_align_dict_l: dict = dict()
+        self.rel_align_dict_r: dict = dict()
 
         self.sub_ent_match = None
         self.sup_ent_match = None
@@ -192,7 +195,9 @@ class KGs:
         rel_norm_dict = self.rel_norm_dict_l if kg is self.kg_l else self.rel_norm_dict_r
         rel_align_dict = self.rel_align_dict_l if kg is self.kg_l else self.rel_align_dict_r
 
-        rel_ongoing_dict.clear(), rel_norm_dict.clear(), rel_align_dict.clear()
+        rel_ongoing_dict.clear()
+        rel_norm_dict.clear()
+        rel_align_dict.clear()
         while not rel_ongoing_dict_queue.empty():
             self.__merge_rel_ongoing_dict(rel_ongoing_dict, rel_ongoing_dict_queue.get())
 
