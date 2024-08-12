@@ -1,4 +1,6 @@
+from module.collection_utils import DictUtils, ListUtils
 from .utils import *
+import logging
 import os
 import os.path as osp
 from random import shuffle
@@ -225,12 +227,16 @@ class InMemoryEAData(EAData):
         self.index2ent2 = {v: k for k, v in self.ent2.items()}
         
         self.link = EAData.process_link_from_tuples(ent_links, self.ent1, self.ent2)
+        
+        print(ListUtils.list_head(self.link))
+        print(ListUtils.list_head(list(map(lambda x: (self.index2ent1[x[0]], self.index2ent2[x[1]]), self.link))))
+        
         self.rels = [self.rel1, self.rel2]
         self.ents = [self.ent1, self.ent2]
         self.triples = [self.triple1, self.triple2]
         
-        self.unsup = semi_links is not None
-        self.semi_link = EAData.process_link_from_tuples(semi_links, self.ent1, self.ent2) if self.unsup else None
+        self.unsup = False # semi_links is not None
+        # self.semi_link = EAData.process_link_from_tuples(semi_links, self.ent1, self.ent2) if self.unsup else None
         
         if train_count is not None:
             self.train_cnt = train_count
@@ -240,11 +246,19 @@ class InMemoryEAData(EAData):
         
         for k, v in kwargs.items():
             setattr(self, k, v)
+
+        logging.info(self)
             
     
-
-    @staticmethod
-    def __list_to_dict(iterable):
-        return {x: idx for idx, x in enumerate(iterable)}
-            
-            
+    def __str__(self):
+        return argprint(
+            triple1=ListUtils.list_head(self.triple1),
+            triple2=ListUtils.list_head(self.triple2),
+            ent1=DictUtils.dict_head(self.ent1),
+            ent2=DictUtils.dict_head(self.ent2),
+            rel1=DictUtils.dict_head(self.rel1),
+            rel2=DictUtils.dict_head(self.rel2),
+            link=ListUtils.list_head(self.link),
+#            semi_link=ListUtils.list_head(self.semi_link),
+            train_cnt=self.train_cnt
+        )

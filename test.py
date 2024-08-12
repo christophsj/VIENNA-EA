@@ -286,14 +286,14 @@ def parse_args():
     parser.add_argument(
         "--iterations",
         type=int,
-        default=10,
+        default=1,
         help="Number of iterations for PARIS. Default is 10.",
     )
 
     parser.add_argument(
         "--dataset_path",
         type=str,
-        default=None,
+        default="D_W_15K_V2/",
         help="Path to the dataset dir.",
     )
 

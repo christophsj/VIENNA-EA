@@ -21,7 +21,7 @@ class ClusterEAModule(Module):
     def __init__(
         self,
         dataset_name: str,
-        gold_result: list[tuple[str, str]],
+        gold_result: Iterable[tuple[str, str]],
         training_threshold: float = 0.8,
         training_max_percentage: float = 0.5,
         result_align_threshold=float("-inf"),
@@ -72,21 +72,27 @@ class ClusterEAModule(Module):
             ListUtils.flatten(embeddings),
         )
 
-        new_entity_pairs = self.__sim_matrix_to_entity_pairs(sim_matrix, dataset)
-
-        if self.gold_result is not None:
-            self._show_stats(new_entity_pairs, self.gold_result)
-
+        new_entity_pairs = list(self.__sim_matrix_to_entity_pairs(sim_matrix, dataset))
         if self.debug_file_output_dir is not None:
             with open(
                 os.path.join(self.debug_file_output_dir, "new_entity_pairs.csv"), "w"
             ) as f:
                 for e1, e2, prob in new_entity_pairs:
-                    f.write(f"{e1},{e2},{prob}\n")
+                    f.write(f"{e1}\t{e2}\t{prob}\n")
 
         pairs = EntityPairUtils.merge_entity_pairs(
             state.entity_alignments, new_entity_pairs, self.result_align_threshold
         )
+        
+        if self.debug_file_output_dir is not None:
+            with open(
+                os.path.join(self.debug_file_output_dir, "merged_entity_pairs.csv"), "w"
+            ) as f:
+                for e1, e2, prob in pairs:
+                    f.write(f"{e1}\t{e2}\t{prob}\n")
+        
+        if self.gold_result is not None:
+            self._show_stats(pairs, self.gold_result)
 
         return AlignmentState(entity_embeddings=ent_emb_dict, entity_alignments=pairs)
 
@@ -94,10 +100,10 @@ class ClusterEAModule(Module):
         self, sim_matrix: torch.Tensor, dataset: InMemoryEAData
     ) -> Iterable[tuple[str, str, float]]:
         indices, scores = self.__alignments_from_sim_matrix(sim_matrix)
-        for idx, score in zip(indices, scores):
+        for idx_1, (idx_2, score) in enumerate(zip(indices, scores)):
             if score < self.result_align_threshold:
                 break
-            yield (dataset.index2ent1[idx], dataset.index2ent2[idx], score)
+            yield (dataset.index2ent1[idx_1], dataset.index2ent2[idx_2], score)
 
     def __convert_data(self, kg1: KG, kg2: KG, state: AlignmentState) -> InMemoryEAData:
         semi_links = list(
@@ -116,7 +122,7 @@ class ClusterEAModule(Module):
             EntityPairUtils.object_triples_to_name_triples(kg2.relation_tuple_list),
             self.gold_result,
             semi_links=semi_links,
-            train_count=0,
+            train_count=3000,
         )
 
     @torch.no_grad()
@@ -141,7 +147,7 @@ class ClusterEAModule(Module):
                     [-i_batch, 0],
                 )
                 .to_dense()
-                .max(dim=1)
+                .max(1)
             )
             top1_indices.append(curr_top1_indices)
             top1_scores.append(curr_top1_scores)
@@ -156,6 +162,9 @@ class ClusterEAModule(Module):
 
         top1_indices = torch.cat(top1_indices)
         top1_scores = torch.cat(top1_scores)
+        
+        logger.info("Max scores: " + str(top1_scores))
+        logger.info("Max indices: " + str(top1_indices))
 
         top1_indices_array = top1_indices.detach().cpu().numpy()
         top1_scores_array = top1_scores.detach().cpu().numpy()
@@ -165,13 +174,15 @@ class ClusterEAModule(Module):
 
         if self.debug_file_output_dir is not None:
             with open(
-                os.path.join(self.debug_file_output_dir, "top1_indices.npy"), "wb"
+                os.path.join(self.debug_file_output_dir, "top1_indices.csv"), "w"
             ) as f:
-                top1_indices_array.tofile(f)
+                for i, idx in enumerate(top1_indices_array):
+                    f.write(f"{i}\t{idx}\n")
 
             with open(
-                os.path.join(self.debug_file_output_dir, "top1_scores.npy"), "wb"
+                os.path.join(self.debug_file_output_dir, "top1_scores.csv"), "w"
             ) as f:
-                top1_scores_array.tofile(f)
+                for i, score in enumerate(top1_scores_array):
+                    f.write(f"{i}\t{score}\n")
 
         return top1_indices_array, top1_scores_array
