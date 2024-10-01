@@ -4,7 +4,7 @@ import logging
 import argparse
 import numpy as np
 
-from module.cluster_ea_module import ClusterEAModule
+from module.bert_int_module import BertIntModule
 from module.dummy_module import DummyModule
 from module.module import AlignmentState, Module
 from module.precomputed_embedding_module import PrecomputedEmbeddingModule
@@ -159,15 +159,12 @@ def run_prase_iteration(
     save_meantime_result(save_dir_path, kgs, embed_module_name)
 
 
-def get_embedding_module(
+def get_learning_module(
     save_dir_path: str,
     dataset_name: str,
     ground_truth_path: str,
-    training_max_percentage: float,
-    interaction_model: bool,
-    model_path: str,
-    des_dict_path: str,
-):
+    args: argparse.Namespace,
+) -> Module:
     # embedding_module = PrecomputedEmbeddingModule(
     #     alignments_path=os.path.join(embed_output_path, "alignment_results_12"),
     #     embeddings_path=os.path.join(embed_output_path, "ent_embeds.npy"),
@@ -182,19 +179,29 @@ def get_embedding_module(
             ent_l, ent_r = params[0].strip(), params[1].strip()
             gold_result.add((ent_l, ent_r))
 
-    embedding_module = ClusterEAModule(
-        # description_name_1="http://purl.org/dc/elements/1.1/description",
-        # description_name_2="http://schema.org/description",
-        model_path=model_path,
-        training_max_percentage=training_max_percentage,
-        debug_file_output_dir=save_dir_path + os.path.join("/clusterea", dataset_name),
+    # embedding_module: Module = ClusterEAModule(
+    #     # description_name_1="http://purl.org/dc/elements/1.1/description",
+    #     # description_name_2="http://schema.org/description",
+    #     model_path=args.model_path,
+    #     training_max_percentage=args.training_max_percentage,
+    #     debug_file_output_dir=save_dir_path + os.path.join("/clusterea", dataset_name),
+    #     dataset_name=dataset_name,
+    #     gold_result=gold_result,
+    # )
+    
+    learning_module = BertIntModule(
+        model_path=args.model_path,
+        training_max_percentage=args.training_max_percentage,
+        debug_file_output_dir=save_dir_path + os.path.join("/bertint", dataset_name),
         dataset_name=dataset_name,
         gold_result=gold_result,
+        interaction_model=args.interaction_model,
+        des_dict_path=args.des_dict_path,
     )
     # embedding_module = DummyModule()
 
-    logger.info(f"Using {embedding_module.__class__.__name__} as the embedding module")
-    return embedding_module
+    logger.info(f"Using {learning_module.__class__.__name__} as the learning module")
+    return learning_module
 
 
 def main():
@@ -234,22 +241,19 @@ def main():
         os.makedirs(save_dir_path)
 
     # embed_module_name = "MultiKE"
-    module = get_embedding_module(
+    learning_module = get_learning_module(
         save_dir_path,
         dataset_name,
         ground_truth_mapping_path,
-        args.training_max_percentage,
-        args.interaction_model,
-        args.model_path,
-        args.des_dict_path,
+        args,
     )
-    embed_module_name = module.__class__.__name__
+    learning_module_name = learning_module.__class__.__name__
 
     run_prase_iteration(
         kgs,
-        module,
+        learning_module,
         save_dir_path,
-        embed_module_name,
+        learning_module_name,
         prase_func=fusion_func,
         ground_truth_path=ground_truth_mapping_path,
         load_ent=True,
@@ -280,7 +284,7 @@ def save_meantime_result(save_dir_path, kgs, embed_module_name):
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="PRASE Python + BERT Interaction Model"
+        description="VIENNA"
     )
 
     parser.add_argument(
@@ -321,7 +325,7 @@ def parse_args():
     parser.add_argument(
         "--des_dict_path",
         type=str,
-        default=None,
+        default="/home/christoph/TU/12_SS24/MA/PRASE-Python/data/D_W_15K_V2/des_dict_wd_15k_v2.pkl",
         help="Path to the description dictionary file.",
     )
 

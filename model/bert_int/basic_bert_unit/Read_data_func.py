@@ -67,10 +67,8 @@ def ent2Tokens_gene(
             token_ids = ent2desTokens[ent]
             ent2tokenids[ent_id] = token_ids
         else:
-            # else, use entity name.
-            ent_name = get_name(ent)
-            token_ids = Tokenizer.encode(ent_name)[:ent_name_max_length]
-            ent2tokenids[ent_id] = token_ids
+            raise Exception("No description for entity")
+            
     return ent2tokenids
 
 
