@@ -2,9 +2,9 @@ import os
 import time
 import logging
 import argparse
+from module.cluster_ea_module import ClusterEAModule
 import numpy as np
 
-from module.bert_int_module import BertIntModule
 from module.dummy_module import DummyModule
 from module.module import AlignmentState, Module
 from module.precomputed_embedding_module import PrecomputedEmbeddingModule
@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def construct_kg(path_r, path_a=None, sep="\t", name=None):
+def construct_kg(path_r, path_a=None, sep="\t", name=None, filter_entities=None):
     kg = KG(name=name)
 
     if path_a is not None:
@@ -28,7 +28,9 @@ def construct_kg(path_r, path_a=None, sep="\t", name=None):
                     print(line)
                     continue
                 h, r, t = params[0].strip(), params[1].strip(), params[2].strip()
-                kg.insert_relation_tuple(h, r, t)
+                
+                if filter_entities is None or (filter_entities(h) and filter_entities(t)):
+                    kg.insert_relation_tuple(h, r, t)
 
         with open(path_a, "r", encoding="utf-8") as f:
             for line in f.readlines():
@@ -68,15 +70,15 @@ def construct_kg(path_r, path_a=None, sep="\t", name=None):
     return kg
 
 
-def construct_kgs(dataset_dir, name="KGs", load_chk=None):
+def construct_kgs(dataset_dir, name="KGs", load_chk=None, filter_entities=None):
     path_r_1 = os.path.join(dataset_dir, "rel_triples_1")
     path_a_1 = os.path.join(dataset_dir, "attr_triples_1")
 
     path_r_2 = os.path.join(dataset_dir, "rel_triples_2")
     path_a_2 = os.path.join(dataset_dir, "attr_triples_2")
 
-    kg1 = construct_kg(path_r_1, path_a_1, name=str(name + "-KG1"))
-    kg2 = construct_kg(path_r_2, path_a_2, name=str(name + "-KG2"))
+    kg1 = construct_kg(path_r_1, path_a_1, name=str(name + "-KG1"), filter_entities=filter_entities)
+    kg2 = construct_kg(path_r_2, path_a_2, name=str(name + "-KG2"), filter_entities=filter_entities)
 
     kgs = KGs(kg1=kg1, kg2=kg2)
     # load the previously saved PRASE model
@@ -162,7 +164,7 @@ def run_prase_iteration(
 def get_learning_module(
     save_dir_path: str,
     dataset_name: str,
-    ground_truth_path: str,
+    gold_result: set[tuple[str, str]],
     args: argparse.Namespace,
 ) -> Module:
     # embedding_module = PrecomputedEmbeddingModule(
@@ -172,36 +174,39 @@ def get_learning_module(
     #     mapping_r_path=os.path.join(embed_output_path, "kg2_ent_ids")
     # )
 
+
+
+    learning_module: Module = ClusterEAModule(
+        # description_name_1="http://purl.org/dc/elements/1.1/description",
+        # description_name_2="http://schema.org/description",
+        model_path=args.model_path,
+        training_max_percentage=args.training_max_percentage,
+        debug_file_output_dir=save_dir_path + os.path.join("/clusterea", dataset_name),
+        dataset_name=dataset_name,
+        gold_result=gold_result,
+    )
+    
+    # learning_module = BertIntModule(
+    #     model_path=args.model_path,
+    #     training_max_percentage=args.training_max_percentage,
+    #     debug_file_output_dir=save_dir_path + os.path.join("/bertint", dataset_name),
+    #     dataset_name=dataset_name,
+    #     gold_result=gold_result,
+    #     interaction_model=args.interaction_model,
+    #     des_dict_path=args.des_dict_path,
+    # )
+    # embedding_module = DummyModule()
+
+    logger.info(f"Using {learning_module.__class__.__name__} as the learning module")
+    return learning_module
+
+def get_gold_result(ground_truth_path: str):
     gold_result = set()
     with open(ground_truth_path, "r", encoding="utf8") as f:
         for line in f.readlines():
             params = str.strip(line).split("\t")
             ent_l, ent_r = params[0].strip(), params[1].strip()
             gold_result.add((ent_l, ent_r))
-
-    # embedding_module: Module = ClusterEAModule(
-    #     # description_name_1="http://purl.org/dc/elements/1.1/description",
-    #     # description_name_2="http://schema.org/description",
-    #     model_path=args.model_path,
-    #     training_max_percentage=args.training_max_percentage,
-    #     debug_file_output_dir=save_dir_path + os.path.join("/clusterea", dataset_name),
-    #     dataset_name=dataset_name,
-    #     gold_result=gold_result,
-    # )
-    
-    learning_module = BertIntModule(
-        model_path=args.model_path,
-        training_max_percentage=args.training_max_percentage,
-        debug_file_output_dir=save_dir_path + os.path.join("/bertint", dataset_name),
-        dataset_name=dataset_name,
-        gold_result=gold_result,
-        interaction_model=args.interaction_model,
-        des_dict_path=args.des_dict_path,
-    )
-    # embedding_module = DummyModule()
-
-    logger.info(f"Using {learning_module.__class__.__name__} as the learning module")
-    return learning_module
 
 
 def main():
@@ -215,7 +220,19 @@ def main():
     # use load_chk to load the PARIS model from a check point
     # note that, due to the limitation of file size, we do not provide the check point file for performing PRASE
     # surprisingly, it may make the result better than the one reported in the paper
-    kgs = construct_kgs(dataset_dir=dataset_path, name=dataset_name, load_chk=None)
+    ground_truth_mapping_path = os.path.join(dataset_path, "ent_links")
+    gold_result = get_gold_result(ground_truth_mapping_path)
+    
+    
+    filter_entities = None
+    if args.filter_entities:
+        entities_1 = list(map(lambda x: x[0], gold_result))
+        entities_2 = list(map(lambda x: x[1], gold_result))
+        
+        def filter_entities(e):
+            return e in entities_1 or e in entities_2
+    
+    kgs = construct_kgs(dataset_dir=dataset_path, name=dataset_name, load_chk=None, filter_entities=filter_entities)
 
     # set the number of processes
     kgs.set_worker_num(10)
@@ -224,7 +241,6 @@ def main():
     kgs.set_iteration(args.iterations)
 
     # ground truth mapping path
-    ground_truth_mapping_path = os.path.join(dataset_path, "ent_links")
 
     # test the model and show the metrics
     # kgs.util.test(path=ground_truth_mapping_path, threshold=0.1)
@@ -244,7 +260,7 @@ def main():
     learning_module = get_learning_module(
         save_dir_path,
         dataset_name,
-        ground_truth_mapping_path,
+        gold_result,
         args,
     )
     learning_module_name = learning_module.__class__.__name__
@@ -325,8 +341,15 @@ def parse_args():
     parser.add_argument(
         "--des_dict_path",
         type=str,
-        default="/home/christoph/TU/12_SS24/MA/PRASE-Python/data/D_W_15K_V2/des_dict_wd_15k_v2.pkl",
+        default=None,
         help="Path to the description dictionary file.",
+    )
+    
+    parser.add_argument(
+        "--filter_entities",
+        type=bool,
+        default=True,
+        help="Whether to only include entities part of the ground truth mapping.",
     )
 
     return parser.parse_args()
