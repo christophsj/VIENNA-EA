@@ -98,7 +98,9 @@ class BertIntModule(Module):
         Model = Model.cuda(CUDA_NUM)
         return Model
 
-    def __convert_basic_unit_to_final(self, bert_int_data: BertIntInput, entity_pairs: list[tuple[str, str, float]]) -> list[tuple[str, str, float]]:
+    def __convert_basic_unit_to_final(
+        self, bert_int_data: BertIntInput, entity_pairs: list[tuple[str, str, float]]
+    ) -> list[tuple[str, str, float]]:
         entity_pairs_dict = EntityPairUtils.entity_pairs_to_candidate_dict(entity_pairs)
 
         if self.debug_file_output_dir is not None:
@@ -145,7 +147,9 @@ class BertIntModule(Module):
             )
 
         logger.info(f"New entity pairs: {len(entity_pairs)}")
-        new_pairs = EntityPairUtils.merge_entity_pairs(state.entity_alignments, entity_pairs, self.result_align_threshold)
+        new_pairs = EntityPairUtils.merge_entity_pairs(
+            state.entity_alignments, entity_pairs, self.result_align_threshold
+        )
         logger.info(f"Merged entity pairs: {len(new_pairs)}")
         return AlignmentState(
             entity_embeddings=ent_emb_dict, entity_alignments=new_pairs
@@ -261,7 +265,9 @@ class BertIntModule(Module):
                 bert_int_data.ent2data,
             )
         )
-        ent_emb_dict = self._ent_emb_to_dict(kg1, kg2, bert_int_data.index2entity, ent_emb)
+        ent_emb_dict = self._ent_emb_to_dict(
+            kg1, kg2, bert_int_data.index2entity, ent_emb
+        )
         return (
             bert_int_data,
             trained_module,
@@ -401,7 +407,7 @@ class BertIntModule(Module):
 
         # ent2descriptionTokens
         Tokenizer = BertTokenizer.from_pretrained("bert-base-multilingual-cased")
-        
+
         descriptions_dict_l = self._build_desc_dict_from_attribute_or_name(
             kg_l, self.description_name_l
         )
@@ -410,13 +416,13 @@ class BertIntModule(Module):
         )
         descriptions_dict = {**descriptions_dict_l, **descriptions_dict_r}
 
-        
         if self.des_dict_path != None:
             import pickle
+
             from_file = pickle.load(open(self.des_dict_path, "rb"))
             logger.info(f"Ent2DesTokensFromFile: {len(from_file)}")
             descriptions_dict = {**descriptions_dict, **from_file}
-            
+
         ent2desTokens = ent2desTokens_generateFromDict(
             Tokenizer,
             descriptions_dict,
@@ -429,7 +435,6 @@ class BertIntModule(Module):
             ),
         )
 
-        
         logger.info(f"DescriptionsDict: {DictUtils.dict_head(descriptions_dict)}")
         logger.info(f"DescriptionsDict: {DictUtils.dict_tail(descriptions_dict)}")
         logger.info(f"Ent2DesTokens: {DictUtils.dict_head(ent2desTokens)}")
@@ -454,7 +459,9 @@ class BertIntModule(Module):
             rel_triples_2=rel_triples_2,
         )
 
-    def _build_desc_dict_from_attribute_or_name(self, kg: KG, description_name: Optional[str]):
+    def _build_desc_dict_from_attribute_or_name(
+        self, kg: KG, description_name: Optional[str]
+    ):
         if description_name is None:
             return {ent.name: get_name(ent.name) for ent in kg.entity_set}
         descriptions_l = [

@@ -8,6 +8,7 @@ from tqdm import trange
 from model.clusterea.dataset import EAData, InMemoryEAData
 from model.clusterea.main import run_1_to_3
 from model.clusterea.utils_largeea import apply, filter_which, resize_sparse
+from module.alignment_module import AlignmentModule
 from module.collection_utils import DictUtils, EntityPairUtils, ListUtils
 from module.module import AlignmentState, Module
 from objects.KG import KG
@@ -22,12 +23,14 @@ class ClusterEAModule(Module):
         self,
         dataset_name: str,
         gold_result: Iterable[tuple[str, str]],
+        alignment_module: AlignmentModule,
         training_threshold: float = 0.8,
         training_max_percentage: float = 0.5,
-        result_align_threshold=float("-inf"),
+        result_align_threshold=0.5,
         model_path: str = None,
         debug_file_output_dir: str = None,
     ):
+        self.alignment_module = alignment_module
         self.training_threshhold = training_threshold
         self.training_max_percentage = training_max_percentage
         self.model_path = model_path
@@ -36,7 +39,7 @@ class ClusterEAModule(Module):
         self.dataset_name = dataset_name
         self.gold_result = gold_result
 
-        logger.info("BertIntModule parameters:")
+        logger.info("ClusterEAModule parameters:")
         logger.info(f"dataset_name: {dataset_name}")
         logger.info(f"training_threshold: {training_threshold}")
         logger.info(f"training_max_percentage: {training_max_percentage}")
@@ -80,17 +83,17 @@ class ClusterEAModule(Module):
                 for e1, e2, prob in new_entity_pairs:
                     f.write(f"{e1}\t{e2}\t{prob}\n")
 
-        pairs = EntityPairUtils.merge_entity_pairs(
+        pairs = self.alignment_module.merge_entity_pairs(
             state.entity_alignments, new_entity_pairs, self.result_align_threshold
         )
-        
+
         if self.debug_file_output_dir is not None:
             with open(
                 os.path.join(self.debug_file_output_dir, "merged_entity_pairs.csv"), "w"
             ) as f:
                 for e1, e2, prob in pairs:
                     f.write(f"{e1}\t{e2}\t{prob}\n")
-        
+
         if self.gold_result is not None:
             self._show_stats(pairs, self.gold_result)
 
@@ -102,7 +105,7 @@ class ClusterEAModule(Module):
         indices, scores = self.__alignments_from_sim_matrix(sim_matrix)
         for idx_1, (idx_2, score) in enumerate(zip(indices, scores)):
             if score < self.result_align_threshold:
-                break
+                continue
             yield (dataset.index2ent1[idx_1], dataset.index2ent2[idx_2], score)
 
     def __convert_data(self, kg1: KG, kg2: KG, state: AlignmentState) -> InMemoryEAData:
@@ -162,7 +165,7 @@ class ClusterEAModule(Module):
 
         top1_indices = torch.cat(top1_indices)
         top1_scores = torch.cat(top1_scores)
-        
+
         logger.info("Max scores: " + str(top1_scores))
         logger.info("Max indices: " + str(top1_indices))
 
