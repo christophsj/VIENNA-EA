@@ -36,7 +36,9 @@ class Module:
     # utility functions
 
     @staticmethod
-    def _ent_emb_to_dict(kg1: KG, kg2: KG, index2entity: dict[int, str], ent_emb: list) -> dict[KG, dict[str, list]]:
+    def _ent_emb_to_dict(
+        kg1: KG, kg2: KG, index2entity: dict[int, str], ent_emb: list
+    ) -> dict[KG, dict[str, list]]:
         logger.info(f"Length of entity embedding: {len(ent_emb)}")
 
         return {

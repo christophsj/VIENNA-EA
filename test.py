@@ -2,13 +2,12 @@ import os
 import time
 import logging
 import argparse
-from module.alignment_module import AlignmentModule
-from module.cluster_ea_module import ClusterEAModule
+from module.alignment.alignment_module import AlignmentModule
 import numpy as np
 
-from module.dummy_module import DummyModule
+from module.alignment.alignment_module_factory import AlignmentModuleFactory
+from module.learning.cluster_ea_module import ClusterEAModule
 from module.module import AlignmentState, Module
-from module.precomputed_embedding_module import PrecomputedEmbeddingModule
 from objects.KG import KG
 from objects.KGs import KGs
 
@@ -171,7 +170,9 @@ def run_iteration(
 def get_alignment_module(
     args: argparse.Namespace,
 ) -> AlignmentModule:
-    alignment_module: AlignmentModule = AlignmentModule.by_name(args.alignment_module)
+    alignment_module: AlignmentModule = AlignmentModuleFactory.by_name(
+        args.alignment_module
+    )
     logger.info(f"Using {alignment_module.__class__.__name__}")
     return alignment_module
 

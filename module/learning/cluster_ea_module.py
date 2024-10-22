@@ -8,7 +8,7 @@ from tqdm import trange
 from model.clusterea.dataset import EAData, InMemoryEAData
 from model.clusterea.main import run_1_to_3
 from model.clusterea.utils_largeea import apply, filter_which, resize_sparse
-from module.alignment_module import AlignmentModule
+from module.alignment.alignment_module import AlignmentModule
 from module.collection_utils import DictUtils, EntityPairUtils, ListUtils
 from module.module import AlignmentState, Module
 from objects.KG import KG
