@@ -325,7 +325,7 @@ def parse_args():
     parser.add_argument(
         "--iterations",
         type=int,
-        default=1,
+        default=10,
         help="Number of iterations for PARIS. Default is 10.",
     )
 
