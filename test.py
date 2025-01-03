@@ -6,7 +6,7 @@ from module.alignment.alignment_module import AlignmentModule
 import numpy as np
 
 from module.alignment.alignment_module_factory import AlignmentModuleFactory
-from module.learning.cluster_ea_module import ClusterEAModule
+from module.learning.bert_int_module import BertIntModule
 from module.module import AlignmentState, Module
 from objects.KG import KG
 from objects.KGs import KGs
@@ -190,26 +190,27 @@ def get_learning_module(
     #     mapping_r_path=os.path.join(embed_output_path, "kg2_ent_ids")
     # )
 
-    learning_module: Module = ClusterEAModule(
-        # description_name_1="http://purl.org/dc/elements/1.1/description",
-        # description_name_2="http://schema.org/description",
-        alignment_module=get_alignment_module(args),
-        model_path=args.model_path,
-        training_max_percentage=args.training_max_percentage,
-        debug_file_output_dir=save_dir_path + os.path.join("/clusterea", dataset_name),
-        dataset_name=dataset_name,
-        gold_result=gold_result,
-    )
-
-    # learning_module = BertIntModule(
+    # learning_module: Module = ClusterEAModule(
+    #     # description_name_1="http://purl.org/dc/elements/1.1/description",
+    #     # description_name_2="http://schema.org/description",
+    #     alignment_module=get_alignment_module(args),
     #     model_path=args.model_path,
     #     training_max_percentage=args.training_max_percentage,
-    #     debug_file_output_dir=save_dir_path + os.path.join("/bertint", dataset_name),
+    #     debug_file_output_dir=save_dir_path + os.path.join("/clusterea", dataset_name),
     #     dataset_name=dataset_name,
     #     gold_result=gold_result,
-    #     interaction_model=args.interaction_model,
-    #     des_dict_path=args.des_dict_path,
     # )
+
+    learning_module = BertIntModule(
+        model_path=args.model_path,
+        training_max_percentage=args.training_max_percentage,
+        debug_file_output_dir=save_dir_path + os.path.join("/bertint", dataset_name),
+        dataset_name=dataset_name,
+        alignment_module=get_alignment_module(args),
+        gold_result=gold_result,
+        interaction_model=args.interaction_model,
+        des_dict_path=args.des_dict_path,
+    )
     # embedding_module = DummyModule()
 
     logger.info(f"Using {learning_module.__class__.__name__} as the learning module")

@@ -36,6 +36,7 @@ from model.bert_int.interaction_model.get_neighView_and_desView_interaction_feat
 from model.bert_int.interaction_model.interaction_model import (
     interaction_model as train_interaction_model,
 )
+from module.alignment.alignment_module import AlignmentModule
 from module.collection_utils import DictUtils, EntityPairUtils, ListUtils
 from module.module import AlignmentState, Module
 from objects.KG import KG
@@ -49,9 +50,10 @@ class BertIntModule(Module):
     def __init__(
         self,
         dataset_name: str,
+        alignment_module: AlignmentModule,
         des_dict_path: str | None = None,
-        description_name_1: str = None,
-        description_name_2: str = None,
+        description_name_1: str | None = None,
+        description_name_2: str | None = None,
         training_threshold: float = 0.8,
         training_max_percentage: float = 0.5,
         result_align_threshold=float("-inf"),
@@ -71,6 +73,7 @@ class BertIntModule(Module):
         self.debug_file_output_dir = debug_file_output_dir
         self.dataset_name = dataset_name
         self.gold_result = gold_result
+        self.alignment_module = alignment_module
 
         if debug_file_output_dir is not None:
             os.makedirs(debug_file_output_dir, exist_ok=True)
@@ -147,7 +150,7 @@ class BertIntModule(Module):
             )
 
         logger.info(f"New entity pairs: {len(entity_pairs)}")
-        new_pairs = EntityPairUtils.merge_entity_pairs(
+        new_pairs = self.alignment_module.merge_entity_pairs(
             state.entity_alignments, entity_pairs, self.result_align_threshold
         )
         logger.info(f"Merged entity pairs: {len(new_pairs)}")
