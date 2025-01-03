@@ -55,7 +55,7 @@ class BertIntModule(Module):
         description_name_1: str | None = None,
         description_name_2: str | None = None,
         training_threshold: float = 0.8,
-        training_max_percentage: float = 0.5,
+        training_max_percentage: float = 0.2,
         result_align_threshold=float("-inf"),
         model_path=None,
         interaction_model=True,
@@ -338,7 +338,9 @@ class BertIntModule(Module):
 
         train_ill = []
         test_ill = []
-        max_train_length = len(state.entity_alignments) * self.training_max_percentage
+        max_train_length = (
+            len(kg_l.entity_set | kg_r.entity_set) / 2
+        ) * self.training_max_percentage
 
         for e1, e2, prob in sorted(
             state.entity_alignments, key=lambda x: x[2], reverse=True
