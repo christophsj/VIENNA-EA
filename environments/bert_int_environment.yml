@@ -71,7 +71,7 @@ dependencies:
   - mamba=1.5.9=py312h9460a1c_0
   - menuinst=2.2.0=py312h7900ff3_0
   - ncurses=6.5=he02047a_1
-  - numpy=2.2.1=py312h7e784f5_0
+  - numpy=1.26.4=py312heda63a1_0
   - openssl=3.4.0=hb9d3cd8_0
   - packaging=24.1=pyhd8ed1ab_0
   - pip=24.3.1=pyh8b19718_0
