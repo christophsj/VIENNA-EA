@@ -10,7 +10,7 @@ cd PRASE-Python
 ./setup_environment.sh
 
 # 3. Activate environment
-conda activate cluster
+conda activate base
 ```
 
 ## Run All Experiments
@@ -90,7 +90,7 @@ output/{dataset}/                       # Model outputs
 | Issue | Solution |
 |-------|----------|
 | `conda: command not found` | Install Miniconda/Anaconda |
-| CUDA version mismatch | Edit `environments/cluster_env.yml` for your CUDA version |
+| CUDA version mismatch | Edit `environments/bert_int_environment.yml` for your CUDA version |
 | Out of memory | Use machine with more GPU RAM |
 | Missing des_dict file | Normal for some datasets - will run without it |
 

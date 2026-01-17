@@ -20,7 +20,7 @@ echo "✓ conda found: $(which conda)"
 
 # Get the directory where this script is located
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-ENV_FILE="$SCRIPT_DIR/environments/cluster_env.yml"
+ENV_FILE="$SCRIPT_DIR/environments/bert_int_environment.yml"
 
 # Check if environment file exists
 if [ ! -f "$ENV_FILE" ]; then

@@ -15,7 +15,7 @@ The experiment setup includes:
 
 - `setup_environment.sh` - Sets up the conda environment on a new machine
 - `run_experiments.sh` - Runs all experiments across all datasets
-- `environments/cluster_env.yml` - Conda environment specification
+- `environments/bert_int_environment.yml` - Conda environment specification
 
 ## Quick Start
 
@@ -29,8 +29,8 @@ On a new machine, run the environment setup script:
 
 This will:
 - Check if conda is installed
-- Create a new conda environment called `cluster` from `environments/cluster_env.yml`
-- Install all required dependencies (PyTorch, DGL, CUDA libraries, etc.)
+- Create a new conda environment called `base` from `environments/bert_int_environment.yml`
+- Install all required dependencies (PyTorch, transformers, CUDA libraries, etc.)
 
 **Note**: This may take 10-30 minutes depending on your internet connection.
 
@@ -39,7 +39,7 @@ This will:
 After setup, activate the environment:
 
 ```bash
-conda activate cluster
+conda activate base
 ```
 
 ### 3. Run Experiments
@@ -157,9 +157,9 @@ conda update -n base -c defaults conda
 
 ### CUDA/GPU Issues
 
-The environment is configured for CUDA 11.3. If you have a different CUDA version:
+The environment is configured for CUDA 12. If you have a different CUDA version:
 1. Check your CUDA version: `nvcc --version`
-2. Modify `environments/cluster_env.yml` to match your CUDA version
+2. Modify `environments/bert_int_environment.yml` to match your CUDA version
 3. Re-run `./setup_environment.sh`
 
 ### Out of Memory
@@ -219,14 +219,14 @@ Approximate runtime per dataset (varies by size and hardware):
 
 ### System Requirements
 - Linux OS (Ubuntu recommended)
-- CUDA-capable GPU (CUDA 11.3 compatible)
+- CUDA-capable GPU (CUDA 12 compatible)
 - At least 16GB RAM
 - At least 50GB free disk space
 
 ### Software Requirements
 - Conda (Miniconda or Anaconda)
-- CUDA 11.3 drivers
-- Python 3.10 (installed via conda)
+- CUDA 12 drivers
+- Python 3.12 (installed via conda)
 
 ## Support
 
