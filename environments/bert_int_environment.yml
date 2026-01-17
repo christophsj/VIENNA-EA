@@ -71,23 +71,19 @@ dependencies:
   - mamba=1.5.9=py312h9460a1c_0
   - menuinst=2.2.0=py312h7900ff3_0
   - ncurses=6.5=he02047a_1
-  - numpy=1.24.3
+  - numpy=2.2.1=py312h7e784f5_0
   - openssl=3.4.0=hb9d3cd8_0
   - packaging=24.1=pyhd8ed1ab_0
   - pip=24.3.1=pyh8b19718_0
   - platformdirs=4.3.6=pyhd8ed1ab_0
   - pluggy=1.5.0=pyhd8ed1ab_0
   - pybind11-abi=4=hd8ed1ab_3
-  - pytorch=2.0.1=*cuda11.2*
-  - pytorch-cuda=11.2
   - pycosat=0.6.6=py312h98912ed_0
   - pycparser=2.22=pyhd8ed1ab_0
   - pysocks=1.7.1=pyha2e5f31_6
-  - python=3.11.0
-  - torchaudio=2.0.2
-  - torchvision=0.15.2
+  - python=3.12.7=hc5c86c4_0_cpython
   - python-dateutil=2.9.0.post0=pyhff2d567_1
-  - python_abi=3.11
+  - python_abi=3.12=5_cp312
   - readline=8.2=h8228510_1
   - regex=2024.11.6=py312h66e93f0_0
   - reproc=14.2.4.post0=hd590300_1
@@ -119,4 +115,7 @@ dependencies:
       - networkx==3.4.2
       - pillow==11.1.0
       - sympy==1.13.1
+      - torch==1.12.1+cu112
+      - torchaudio==0.12.1+cu112
+      - torchvision==0.13.1+cu112
       - typing-extensions==4.12.2
