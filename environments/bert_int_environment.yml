@@ -78,10 +78,14 @@ dependencies:
   - platformdirs=4.3.6=pyhd8ed1ab_0
   - pluggy=1.5.0=pyhd8ed1ab_0
   - pybind11-abi=4=hd8ed1ab_3
+  - pytorch=2.0.1=py3.12_cuda11.7_cudnn8.5.0_0
+  - pytorch-cuda=11.7
   - pycosat=0.6.6=py312h98912ed_0
   - pycparser=2.22=pyhd8ed1ab_0
   - pysocks=1.7.1=pyha2e5f31_6
   - python=3.12.7=hc5c86c4_0_cpython
+  - torchaudio=2.0.2
+  - torchvision=0.15.2
   - python-dateutil=2.9.0.post0=pyhff2d567_1
   - python_abi=3.12=5_cp312
   - readline=8.2=h8228510_1
@@ -115,7 +119,4 @@ dependencies:
       - networkx==3.4.2
       - pillow==11.1.0
       - sympy==1.13.1
-      - torch==2.0.1+cu118
-      - torchaudio==2.0.2+cu118
-      - torchvision==0.15.2+cu118
       - typing-extensions==4.12.2
