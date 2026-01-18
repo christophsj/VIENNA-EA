@@ -115,8 +115,8 @@ dependencies:
       - networkx==3.4.2
       - pillow==11.1.0
       - sympy==1.13.1
-      - --extra-index-url https://download.pytorch.org/whl/cu113
-      - torch==2.2.0
-      - torchaudio==2.2.0
-      - torchvision==0.17.0
+      - torch==1.12.1+cu111
+      - torchaudio==0.12.1+cu111
+      - torchvision==0.13.1+cu111
+      - --find-links https://download.pytorch.org/whl/torch_stable.html
       - typing-extensions==4.12.2
