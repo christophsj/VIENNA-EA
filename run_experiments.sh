@@ -38,11 +38,12 @@ run_experiment() {
     local dataset_path=$1
     local des_dict_path=$2
     local run_number=$3
-    local dataset_name=$(basename "$dataset_path")
+    # Create a unique name by replacing slashes with underscores
+    local dataset_name=$(echo "$dataset_path" | tr '/' '_')
     
     log_message ""
     log_message "========================================="
-    log_message "Dataset: $dataset_name"
+    log_message "Dataset: $dataset_path"
     log_message "Run: $run_number/3"
     log_message "Des Dict: ${des_dict_path:-None}"
     log_message "========================================="
@@ -76,10 +77,10 @@ datasets=(
     "dbp15k/fr_en/converted|data/des_dict.pkl"
     "dbp15k/ja_en/converted|data/des_dict.pkl"
     "dbp15k/zh_en/converted|data/des_dict.pkl"
-    "D_W_15K_V2|data/D_W_15K_V2/des_dict_wd_15k_v2.pkl"
-    "D_Y_15K_V2|"
-    "EN_DE_15K_V2|"
-    "EN_FR_15K_V2|"
+ #   "D_W_15K_V2|data/D_W_15K_V2/des_dict_wd_15k_v2.pkl"
+  #  "D_Y_15K_V2|"
+ #   "EN_DE_15K_V2|"
+ #   "EN_FR_15K_V2|"
 )
 
 # Start timing
