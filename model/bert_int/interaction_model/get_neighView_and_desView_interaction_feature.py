@@ -60,8 +60,9 @@ def neighborView_interaction_F_gene(ent_pairs, ent_emb_list, neigh_dict, ent_pad
         batch_ent_pairs = ent_pairs[start_pos: start_pos + batch_size]
         e1s = [e1 for e1, e2 in batch_ent_pairs]
         e2s = [e2 for e1, e2 in batch_ent_pairs]
-        e1_tails = [neigh_dict[e1] for e1 in e1s]  # size: [B(Batchsize),ne1(e1_neighbor_max_num)]
-        e2_tails = [neigh_dict[e2] for e2 in e2s]  # [B,ne2]
+        pad_list = [ent_pad_id] * len(next(iter(neigh_dict.values())))
+        e1_tails = [neigh_dict.get(e1, pad_list) for e1 in e1s]  # size: [B(Batchsize),ne1(e1_neighbor_max_num)]
+        e2_tails = [neigh_dict.get(e2, pad_list) for e2 in e2s]  # [B,ne2]
         e1_masks = np.ones(np.array(e1_tails).shape)
         e2_masks = np.ones(np.array(e2_tails).shape)
         e1_masks[np.array(e1_tails) == ent_pad_id] = 0

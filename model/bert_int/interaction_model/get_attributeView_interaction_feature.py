@@ -33,8 +33,9 @@ def attributeView_interaction_F_gene(ent_pairs, value_emb_list, ent2valueids, va
         batch_ent_pairs = ent_pairs[start_pos: start_pos + batch_size]
         e1s = [e1 for e1, e2 in batch_ent_pairs]
         e2s = [e2 for e1, e2 in batch_ent_pairs]
-        e1_values = [ent2valueids[e1] for e1 in e1s]  # size: [B(Batchsize), ne1(e1_attributeValue_max_num)]
-        e2_values = [ent2valueids[e2] for e2 in e2s]  # [B,ne2]
+        pad_list = [value_pad_id] * len(next(iter(ent2valueids.values())))
+        e1_values = [ent2valueids.get(e1, pad_list) for e1 in e1s]  # size: [B(Batchsize), ne1(e1_attributeValue_max_num)]
+        e2_values = [ent2valueids.get(e2, pad_list) for e2 in e2s]  # [B,ne2]
 
         e1_masks = np.ones(np.array(e1_values).shape)
         e2_masks = np.ones(np.array(e2_values).shape)
