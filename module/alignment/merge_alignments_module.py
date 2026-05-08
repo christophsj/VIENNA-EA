@@ -12,25 +12,21 @@ class MergeAlignmentsModule(AlignmentModule):
         new_entity_pairs: Iterable[tuple[str, str, float]],
         result_align_threshold: float,
     ) -> list[tuple[str, str, float]]:
-        entity_pairs_dict = EntityPairUtils.entity_pairs_to_dict(entity_pairs)
-        new_entity_pairs_dict = EntityPairUtils.entity_pairs_to_dict(new_entity_pairs)
-        entity_pairs_merged_dict = {}
-        for e1, e2, prob in new_entity_pairs:
-            if prob < result_align_threshold:
-                continue
 
-            previous_prob = entity_pairs_dict.get(e1, (None, 0))[1]
-            new_prob = previous_prob + prob
-            new_prob = min(new_prob, 1.0)
-            new_prob = max(new_prob, 0.0)
-            entity_pairs_merged_dict[e1] = (e2, new_prob)
+        scores = {}
 
-        for e1, e2, prob in entity_pairs:
-            if e1 is None or e2 is None:
-                continue
-            if e1 not in new_entity_pairs_dict or prob > new_entity_pairs_dict[e1][1]:
-                entity_pairs_merged_dict[e1] = (e2, prob)
+        for e1, e2, prob in list(entity_pairs) + list(new_entity_pairs):
+            if e1 not in scores:
+                scores[e1] = {}
 
-        return list(
-            map(lambda x: (x[0], x[1][0], x[1][1]), entity_pairs_merged_dict.items())
-        )
+            scores[e1][e2] = scores[e1].get(e2, 0) + prob
+
+        results = []
+        for e1, targets in scores.items():
+            best_e2 = max(targets, key=targets.get)
+            final_prob = min(targets[best_e2], 1.0)
+
+            if final_prob >= result_align_threshold:
+                results.append((e1, best_e2, final_prob))
+
+        return results
